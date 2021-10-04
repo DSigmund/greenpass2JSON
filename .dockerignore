@@ -4,3 +4,4 @@ config.json
 docker.sh
 Dockerfile
 .env
+testdata/
