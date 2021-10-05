@@ -5,6 +5,8 @@ const { DCC } = require('dcc-utils');
 const express = require('express')
 const https = require('https')
 const http = require('http')
+const bodyParser = require("body-parser");
+
 
 const os = require('os')
 const multer  = require('multer')
@@ -41,6 +43,9 @@ app.use(security(config.security))
 
 app.use(cors(config.cors))
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 app.get('/_version', (req, res) => {
   res.send(version)
 })
@@ -55,10 +60,15 @@ app.post('/qrcode', upload.single('image'), async function (req, res, next) {
   res.json(dcc.payload);
 })
 
-app.post('/hc1', upload.none(), async function(req, res) {
-  log.debug('HC1: ' + req.body.hc1)
-  const dcc = await DCC.fromRaw(req.body.hc1);
-  res.json(dcc.payload);
+app.post('/hc1', async function(req, res) {
+  if (req.body && req.body.hc1) {
+    log.debug('HC1: ' + req.body.hc1)
+    const dcc = await DCC.fromRaw(req.body.hc1);
+    res.json(dcc.payload);
+  } else {
+    res.sendStatus(400)
+  }
+  
 })
 
 app.get('/_metrics', metrics.endpoint)
