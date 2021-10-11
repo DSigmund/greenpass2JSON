@@ -64,17 +64,18 @@ app.post('/qrcode', upload.any(), async function (req, res, next) {
     return res.sendStatus(400)
   }
   try {
-    const dcc = await DCC.fromImage(req.files[0].path);
     if (config.keep.lastimage) {
       lastImage = path.join(req.files[0].destination, 'last' + path.extname(req.files[0].originalname))
       fs.copyFile(req.files[0].path, lastImage, () => {
         log.debug('Kept ' + lastImage)
+        const dcc = await DCC.fromImage(req.files[0].path);
         if(config.keep.lastresult) {
           lastresult = dcc.payload
         }
         res.json(dcc.payload);
       })
     } else {
+      const dcc = await DCC.fromImage(req.files[0].path);
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
