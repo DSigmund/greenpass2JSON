@@ -58,24 +58,31 @@ app.get('/_health', (req, res) => {
   res.sendStatus(200)
 })
 
-//app.post('/qrcode', upload.single('image'), async function (req, res, next) {
 app.post('/qrcode', upload.any(), async function (req, res, next) {
-  log.debug('Upload: ' + JSON.stringify(req.files))
-  const dcc = await DCC.fromImage(req.files[0].path);
-  if (config.keep.lastimage) {
-    lastImage = path.join(req.files[0].destination, 'last' + path.extname(req.files[0].originalname))
-    fs.copyFile(req.files[0].path, lastImage, () => {
-      log.debug('Kept ' + lastImage)
+  log.debug('Upload: req.files:' + JSON.stringify(req.files) + ', req.file:' + JSON.stringify(req.file))
+  if(!req.files && !req.file) {
+    return res.sendStatus(400)
+  }
+  try {
+    const dcc = await DCC.fromImage(req.files[0].path);
+    if (config.keep.lastimage) {
+      lastImage = path.join(req.files[0].destination, 'last' + path.extname(req.files[0].originalname))
+      fs.copyFile(req.files[0].path, lastImage, () => {
+        log.debug('Kept ' + lastImage)
+        if(config.keep.lastresult) {
+          lastresult = dcc.payload
+        }
+        res.json(dcc.payload);
+      })
+    } else {
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
       res.json(dcc.payload);
-    })
-  } else {
-    if(config.keep.lastresult) {
-      lastresult = dcc.payload
     }
-    res.json(dcc.payload);
+  } catch (error) {
+    log.error(JSON.stringify(error))
+    res.status(500).json(error)
   }
 })
 
@@ -93,7 +100,6 @@ app.post('/hc1', async function(req, res) {
   } else {
     res.sendStatus(400)
   }
-  
 })
 
 if (config.keep.lastimage) {
