@@ -14,7 +14,7 @@ const multer  = require('multer')
 const upload = multer({ dest: os.tmpdir() })
 let lastImage = ''
 let lasthc1 = ''
-let lastresult = ''
+let lastresult = {}
 
 const cors = require('cors')
 
@@ -62,7 +62,7 @@ app.post('/qrcode', upload.single('image'), async function (req, res, next) {
   log.debug('Upload: ' + JSON.stringify(req.file))
   const dcc = await DCC.fromImage(req.file.path);
   if (config.keep.lastimage) {
-    lastImage = path.join(req.file.destination, 'last' + path.extname(req.file.filename))
+    lastImage = path.join(req.file.destination, 'last' + path.extname(req.file.originalname))
     fs.copyFile(req.file.path, lastImage, () => {
       log.debug('Kept ' + lastImage)
       if(config.keep.lastresult) {
@@ -97,7 +97,12 @@ app.post('/hc1', async function(req, res) {
 
 if (config.keep.lastimage) {
   app.get('/last/image', (req, res) => {
-    res.sendFile(lastImage)
+    if(lastImage.length > 0) {
+      res.sendFile(lastImage)
+    } else {
+      res.status(404).end('No Image uploaded yet')
+    }
+    
   })
 }
 if (config.keep.lasthc1) {
