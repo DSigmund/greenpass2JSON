@@ -75,6 +75,7 @@ app.post('/qrcode', upload.any(), async function (req, res, next) {
       res.json(dcc.payload);
     } else {
       const dcc = await DCC.fromImage(req.files[0].path);
+      log.debug(JSON.stringify(dcc))
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
