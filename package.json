@@ -1,6 +1,6 @@
 {
   "name": "greenpass2json",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Takes a HC1-String or a GreenPass-QR-Code and returns the decoded JSON.",
   "main": "index.js",
   "scripts": {
