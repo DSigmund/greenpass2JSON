@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 
 const { DCC } = require('dcc-utils');
 
@@ -11,6 +12,9 @@ const bodyParser = require("body-parser");
 const os = require('os')
 const multer  = require('multer')
 const upload = multer({ dest: os.tmpdir() })
+let lastImage = ''
+let lasthc1 = ''
+let lastresult = ''
 
 const cors = require('cors')
 
@@ -57,19 +61,55 @@ app.get('/_health', (req, res) => {
 app.post('/qrcode', upload.single('image'), async function (req, res, next) {
   log.debug('Upload: ' + JSON.stringify(req.file))
   const dcc = await DCC.fromImage(req.file.path);
-  res.json(dcc.payload);
+  if (config.keep.lastimage) {
+    lastImage = path.join(req.file.destination, 'last' + path.extname(req.file.filename))
+    fs.copyFile(req.file.path, lastImage, () => {
+      log.debug('Kept ' + lastImage)
+      if(config.keep.lastresult) {
+        lastresult = dcc.payload
+      }
+      res.json(dcc.payload);
+    })
+  } else {
+    if(config.keep.lastresult) {
+      lastresult = dcc.payload
+    }
+    res.json(dcc.payload);
+  }
 })
 
 app.post('/hc1', async function(req, res) {
   if (req.body && req.body.hc1) {
     log.debug('HC1: ' + req.body.hc1)
     const dcc = await DCC.fromRaw(req.body.hc1);
+    if(config.keep.lasthc1) {
+      lasthc1 = req.body.hc1
+    }
+    if(config.keep.lastresult) {
+      lastresult = dcc.payload
+    }
     res.json(dcc.payload);
   } else {
     res.sendStatus(400)
   }
   
 })
+
+if (config.keep.lastimage) {
+  app.get('/last/image', (req, res) => {
+    res.sendFile(lastImage)
+  })
+}
+if (config.keep.lasthc1) {
+  app.get('/last/hc1', (req, res) => {
+    res.end(lasthc1)
+  })
+}
+if (config.keep.lastresult) {
+  app.get('/last/result', (req, res) => {
+    res.json(lastresult)
+  })
+}
 
 app.get('/_metrics', metrics.endpoint)
 

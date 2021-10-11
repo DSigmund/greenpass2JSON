@@ -1,5 +1,10 @@
 {
   "port": 3000,
+  "keep": {
+    "lastimage": false,
+    "lasthc1": false,
+    "lastresult": false
+  },
   "ssl": {
     "active": false,
     "key":"",
@@ -21,7 +26,10 @@
       "/_metrics",
       "/_version",
       "/qrcode",
-      "/hc1"
+      "/hc1",
+      "/last/image",
+      "/last/hc1",
+      "/last/result"
     ]
   },
   "cors": {
