@@ -3,6 +3,7 @@ const path = require('path')
 
 const { DCC } = require('dcc-utils');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const axios = require('axios')
 
 const express = require('express')
 const https = require('https')
@@ -77,22 +78,32 @@ app.post('/qrcode', upload.any(), async function (req, res, next) {
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
+      let result = {}
       if (config.verify.active) {
-        res.json(await checkSignature(dcc));
+        result = await checkSignature(dcc);
       } else {
-        res.json(dcc.payload);
+        result = dcc.payload
       }
+      if (config.postresult.active) {
+        await axios.post(config.postresult.target, result)
+      }
+      res.json(result)
     } else {
       const dcc = await DCC.fromImage(req.files[0].path);
       log.debug(JSON.stringify(dcc))
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
+      let result = {}
       if (config.verify.active) {
-        res.json(await checkSignature(dcc));
+        result = await checkSignature(dcc);
       } else {
-        res.json(dcc.payload);
+        result = dcc.payload
       }
+      if (config.postresult.active) {
+        await axios.post(config.postresult.target, result)
+      }
+      res.json(result)
     }
   } catch (error) {
     log.error(JSON.stringify(error))
@@ -110,11 +121,16 @@ app.post('/hc1', async function(req, res) {
     if(config.keep.lastresult) {
       lastresult = dcc.payload
     }
+    let result = {}
     if (config.verify.active) {
-      res.json(await checkSignature(dcc));
+      result = await checkSignature(dcc);
     } else {
-      res.json(dcc.payload);
+      result = dcc.payload
     }
+    if (config.postresult.active) {
+      await axios.post(config.postresult.target, result)
+    }
+    res.json(result)
   } else {
     res.sendStatus(400)
   }

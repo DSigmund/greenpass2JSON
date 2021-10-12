@@ -13,6 +13,8 @@ The easy way is to simply create a __config.json__.
 - __keep.lastresult__: Keep the last result. (default: false)
 - __verify.active__: Activate Verfification of certs. only valid certs will return the payload. (default: false)
 - __verify.list__: List of certs to use to verify (default: https://raw.githubusercontent.com/bcsongor/covid-pass-verifier/35336fd3c0ff969b5b4784d7763c64ead6305615/src/data/certificates.json)
+- __postresult.active__: Post the payload to another service (default: false)
+- __postresult.target__: Where to post the payload t (default: '')
 
 Example:
 
@@ -30,6 +32,10 @@ Example:
   "verify": {
     "active": false,
     "list":"https://raw.githubusercontent.com/bcsongor/covid-pass-verifier/35336fd3c0ff969b5b4784d7763c64ead6305615/src/data/certificates.json"
+  },
+  "postresult": {
+    "active": false,
+    "target": ""
   }
 }
 ```
