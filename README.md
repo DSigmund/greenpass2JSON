@@ -7,7 +7,12 @@ Takes a HC1-String or a GreenPass-QR-Code and returns the decoded JSON.
 The easy way is to simply create a __config.json__.
 
 - __port__: Port for the Service. (default: 3000)
-- __log/loglevel__: The Loglevel. (default: INFO)
+- __log.loglevel__: The Loglevel. (default: INFO)
+- __keep.lastimage__: Keep the last uploaded image. (default: false)
+- __keep.lasthc1__: Keep the last uploaded hc1-string. (default: false)
+- __keep.lastresult__: Keep the last result. (default: false)
+- __verify.active__: Activate Verfification of certs. only valid certs will return the payload. (default: false)
+- __verify.list__: List of certs to use to verify (default: https://raw.githubusercontent.com/bcsongor/covid-pass-verifier/35336fd3c0ff969b5b4784d7763c64ead6305615/src/data/certificates.json)
 
 Example:
 
@@ -16,6 +21,15 @@ Example:
   "port": 3000,
   "log": {
     "loglevel":"INFO"
+  },
+  "keep": {
+    "lastimage": false,
+    "lasthc1": false,
+    "lastresult": false
+  },
+  "verify": {
+    "active": false,
+    "list":"https://raw.githubusercontent.com/bcsongor/covid-pass-verifier/35336fd3c0ff969b5b4784d7763c64ead6305615/src/data/certificates.json"
   }
 }
 ```

@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 
 const { DCC } = require('dcc-utils');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const express = require('express')
 const https = require('https')
@@ -39,6 +40,10 @@ metrics.addCustomMetric({
 }, Metrics.MetricType.GAUGE);
 metrics.customMetrics['version'].labels(version).set(1)
 
+let signatures;
+if (config.verify.active) {
+  signatures = loadCerts();
+}
 
 let app = express()
 
@@ -72,14 +77,22 @@ app.post('/qrcode', upload.any(), async function (req, res, next) {
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
-      res.json(dcc.payload);
+      if (config.verify.active) {
+        res.json(await checkSignature(dcc));
+      } else {
+        res.json(dcc.payload);
+      }
     } else {
       const dcc = await DCC.fromImage(req.files[0].path);
       log.debug(JSON.stringify(dcc))
       if(config.keep.lastresult) {
         lastresult = dcc.payload
       }
-      res.json(dcc.payload);
+      if (config.verify.active) {
+        res.json(await checkSignature(dcc));
+      } else {
+        res.json(dcc.payload);
+      }
     }
   } catch (error) {
     log.error(JSON.stringify(error))
@@ -97,7 +110,11 @@ app.post('/hc1', async function(req, res) {
     if(config.keep.lastresult) {
       lastresult = dcc.payload
     }
-    res.json(dcc.payload);
+    if (config.verify.active) {
+      res.json(await checkSignature(dcc));
+    } else {
+      res.json(dcc.payload);
+    }
   } else {
     res.sendStatus(400)
   }
@@ -143,3 +160,27 @@ if (config.ssl.active) {
 server.listen(config.port)
 
 log.info(`greenpass2json is running on Port ${config.port}`)
+
+async function loadCerts(){
+  const response = await fetch(config.verify.list);
+  signatures = await response.json();
+  log.debug('Loaded ' + signatures.length + ' Signatures')
+  return signatures;
+}
+async function checkSignature(dcc) {
+  for (signature of signatures) {
+    if (signature.pub) {
+      try {
+        const verified = await dcc.checkSignature({
+          x: Buffer.from(signature.pub.x),
+          y: Buffer.from(signature.pub.y),
+          kid: Buffer.from(signature.kid),
+        });
+        if (verified) {
+          return dcc.payload;
+        }
+      } catch {}
+    }
+  }
+  return {}
+}

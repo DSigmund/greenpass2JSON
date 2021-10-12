@@ -5,6 +5,14 @@
     "lasthc1": false,
     "lastresult": false
   },
+  "verify": {
+    "active": false,
+    "list":"https://raw.githubusercontent.com/bcsongor/covid-pass-verifier/35336fd3c0ff969b5b4784d7763c64ead6305615/src/data/certificates.json"
+  },
+  "postresult": {
+    "active": false,
+    "target": ""
+  },
   "ssl": {
     "active": false,
     "key":"",
